@@ -1,0 +1,51 @@
+# ─── Python ───────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+env/
+*.egg-info/
+.pytest_cache/
+.coverage
+htmlcov/
+coverage.xml
+
+# ─── Node.js ──────────────────────────────────────────────
+node_modules/
+.next/
+.nuxt/
+dist/
+build/
+*.log
+npm-debug.log*
+
+# ─── Середовища і секрети ─────────────────────────────────
+.env
+.env.local
+.env.*.local
+# .env.example НЕ ігноруємо — він має бути в репо як шаблон
+
+# ─── Terraform ────────────────────────────────────────────
+**/.terraform/
+*.tfstate
+*.tfstate.backup
+*.tfvars
+# terraform.tfvars може містити паролі — не комітимо
+# але variables.tf і main.tf — комітимо
+.terraform.lock.hcl
+crash.log
+
+# ─── Docker ───────────────────────────────────────────────
+# docker-compose.override.yml може містити локальні налаштування
+docker-compose.override.yml
+
+# ─── IDE ──────────────────────────────────────────────────
+.vscode/settings.json
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# ─── OS ───────────────────────────────────────────────────
+Thumbs.db

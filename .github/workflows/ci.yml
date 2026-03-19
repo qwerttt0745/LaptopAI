@@ -1,0 +1,14 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [develop]
+
+jobs:
+  placeholder:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Workflow in progress
+        run: echo "CI pipeline буде налаштований пізніше"

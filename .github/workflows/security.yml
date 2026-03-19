@@ -1,0 +1,12 @@
+name: Security Scan
+
+on:
+  push:
+    branches: [main, develop]
+
+jobs:
+  placeholder:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Security scan in progress
+        run: echo "Trivy scan буде налаштований пізніше"
