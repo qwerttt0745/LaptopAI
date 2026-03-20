@@ -1,4 +1,4 @@
 image:
   repository: placeholder
-  tag: latest
+  tag: 1f0b5c2c7dd9a86f5d26dc54b3b8a9695647a971
 replicaCount: 1
