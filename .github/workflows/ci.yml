@@ -29,6 +29,12 @@ jobs:
       - name: Check formatting
         run: black --check backend/app ai-service/app
 
+      - name: Install backend dependencies
+        run: pip install -r backend/requirements.txt
+
+      - name: Install ai-service dependencies
+        run: pip install -r ai-service/requirements.txt
+
       - name: Run pylint backend
         run: pylint backend/app --fail-under=7 --disable=C0114,C0115,C0116
 
