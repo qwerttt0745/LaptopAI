@@ -127,3 +127,64 @@ jobs:
         with:
           name: coverage-report
           path: backend/coverage.xml
+
+  build-and-push:
+    runs-on: ubuntu-latest
+    needs: [test-backend, lint-frontend]
+    if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main'
+    strategy:
+      matrix:
+        service: [backend, ai-service, frontend]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Login to ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push
+        env:
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          SHA: ${{ github.sha }}
+        run: |
+          docker build \
+            --cache-from $REGISTRY/laptopai-${{ matrix.service }}:latest \
+            --build-arg BUILDKIT_INLINE_CACHE=1 \
+            -t $REGISTRY/laptopai-${{ matrix.service }}:$SHA \
+            -t $REGISTRY/laptopai-${{ matrix.service }}:latest \
+            ./${{ matrix.service }}
+          docker push $REGISTRY/laptopai-${{ matrix.service }}:$SHA
+          docker push $REGISTRY/laptopai-${{ matrix.service }}:latest
+
+  update-helm:
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_PAT }}
+
+      - name: Update image tags
+        env:
+          SHA: ${{ github.sha }}
+        run: |
+          sed -i "s/tag:.*/tag: $SHA/" k8s/helm/backend/values.yaml
+          sed -i "s/tag:.*/tag: $SHA/" k8s/helm/ai-service/values.yaml
+          sed -i "s/tag:.*/tag: $SHA/" k8s/helm/frontend/values.yaml
+          git config user.email "ci@laptopai.dev"
+          git config user.name "GitHub Actions"
+          git add k8s/helm/backend/values.yaml k8s/helm/ai-service/values.yaml k8s/helm/frontend/values.yaml
+          git diff --staged --quiet || git commit -m "ci: update image tags to $SHA [skip ci]"
+          git push

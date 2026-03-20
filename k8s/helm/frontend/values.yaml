@@ -1,0 +1,4 @@
+image:
+  repository: placeholder
+  tag: latest
+replicaCount: 1
