@@ -5,8 +5,44 @@ on:
     branches: [main, develop]
 
 jobs:
-  placeholder:
+  trivy:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Security scan in progress
-        run: echo "Trivy scan буде налаштований пізніше"
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Login to ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Scan backend image
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ steps.login-ecr.outputs.registry }}/laptopai-backend:latest
+          severity: CRITICAL
+          exit-code: 1
+          ignore-unfixed: true
+
+      - name: Scan ai-service image
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ steps.login-ecr.outputs.registry }}/laptopai-ai-service:latest
+          severity: CRITICAL
+          exit-code: 1
+          ignore-unfixed: true
+
+      - name: Scan frontend image
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ steps.login-ecr.outputs.registry }}/laptopai-frontend:latest
+          severity: CRITICAL
+          exit-code: 1
+          ignore-unfixed: true
