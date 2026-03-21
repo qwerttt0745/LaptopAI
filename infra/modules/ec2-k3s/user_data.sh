@@ -2,7 +2,7 @@
 set -e
 
 yum update -y
-yum install -y curl git
+yum install -y git
 
 curl -sfL https://get.k3s.io | sh -s - \
   --write-kubeconfig-mode 644 \
