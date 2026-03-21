@@ -17,13 +17,11 @@ curl -sfL https://get.k3s.io | sh -s - \
 systemctl enable k3s
 systemctl start k3s
 
-sleep 30
+export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
 
 until kubectl get nodes | grep -q Ready; do
   sleep 5
 done
-
-sleep 20
 
 curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 
@@ -34,6 +32,7 @@ kubectl create namespace monitoring --dry-run=client -o yaml | kubectl apply -f 
 
 cat > /usr/local/bin/ecr-refresh.sh << 'EOF'
 #!/bin/bash
+export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
 TOKEN=$(aws ecr get-login-password --region eu-central-1)
 cat > /etc/rancher/k3s/registries.yaml << YAML
 configs:
@@ -43,16 +42,14 @@ configs:
       password: "${TOKEN}"
 YAML
 systemctl restart k3s
+sleep 30
+until kubectl get nodes | grep -q Ready; do
+  sleep 5
+done
 EOF
 
 chmod +x /usr/local/bin/ecr-refresh.sh
 /usr/local/bin/ecr-refresh.sh
-
-sleep 30
-
-until kubectl get nodes | grep -q Ready; do
-  sleep 5
-done
 
 echo "0 */6 * * * root /usr/local/bin/ecr-refresh.sh" > /etc/cron.d/ecr-refresh
 
@@ -62,4 +59,4 @@ helm repo update
 helm install argocd argo/argo-cd \
   --namespace argocd \
   --set server.service.type=ClusterIP \
-  --wait --timeout 10m
+  --wait --timeout 5m
