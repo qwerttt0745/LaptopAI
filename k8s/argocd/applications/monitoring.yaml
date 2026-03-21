@@ -24,14 +24,7 @@ spec:
         alertmanager:
           enabled: false
         grafana:
-          adminPassword: "LaptopAI2024"
-          resources:
-            requests:
-              cpu: 25m
-              memory: 64Mi
-            limits:
-              cpu: 100m
-              memory: 128Mi
+          enabled: false
         nodeExporter:
           enabled: true
         kubeStateMetrics:
