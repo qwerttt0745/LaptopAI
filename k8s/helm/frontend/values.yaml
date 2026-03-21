@@ -1,4 +1,7 @@
 image:
-  repository: placeholder
-  tag: 3d1088f86bdcdfef5ed9f78bfd92fdbe81290e69
+  repository: 968909453204.dkr.ecr.eu-central-1.amazonaws.com/laptopai-frontend
+  tag: latest
+
 replicaCount: 1
+namespace: dev
+apiUrl: http://backend:8000
