@@ -10,11 +10,40 @@ spec:
     chart: kube-prometheus-stack
     targetRevision: 65.1.1
     helm:
-      valueFiles:
-        - values.yaml
       values: |
+        prometheus:
+          prometheusSpec:
+            retention: 3d
+            resources:
+              requests:
+                cpu: 50m
+                memory: 128Mi
+              limits:
+                cpu: 200m
+                memory: 256Mi
+        alertmanager:
+          enabled: false
         grafana:
           adminPassword: "LaptopAI2024"
+          resources:
+            requests:
+              cpu: 25m
+              memory: 64Mi
+            limits:
+              cpu: 100m
+              memory: 128Mi
+        nodeExporter:
+          enabled: true
+        kubeStateMetrics:
+          enabled: true
+        prometheusOperator:
+          resources:
+            requests:
+              cpu: 25m
+              memory: 64Mi
+            limits:
+              cpu: 100m
+              memory: 128Mi
   destination:
     server: https://kubernetes.default.svc
     namespace: monitoring
