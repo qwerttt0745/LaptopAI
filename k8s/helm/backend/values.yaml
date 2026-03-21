@@ -1,4 +1,6 @@
 image:
-  repository: placeholder
-  tag: 0d19f8dc187823c848b8a040fcc122fe44876411
+  repository: 968909453204.dkr.ecr.eu-central-1.amazonaws.com/laptopai-backend
+  tag: latest
+
 replicaCount: 1
+namespace: dev

@@ -55,6 +55,7 @@ resource "aws_instance" "k3s" {
   key_name                    = aws_key_pair.k3s.key_name
   user_data                   = file("${path.module}/user_data.sh")
   user_data_replace_on_change = true
+  iam_instance_profile        = aws_iam_instance_profile.k3s.name
 
   root_block_device {
     volume_type = "gp3"
@@ -83,4 +84,27 @@ data "aws_ami" "amazon_linux" {
     name   = "name"
     values = ["al2023-ami-*-x86_64"]
   }
+}
+
+resource "aws_iam_role" "k3s" {
+  name = "laptopai-${var.env}-k3s-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Action    = "sts:AssumeRole"
+      Effect    = "Allow"
+      Principal = { Service = "ec2.amazonaws.com" }
+    }]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "ecr" {
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
+  role       = aws_iam_role.k3s.name
+}
+
+resource "aws_iam_instance_profile" "k3s" {
+  name = "laptopai-${var.env}-k3s-profile"
+  role = aws_iam_role.k3s.name
 }
