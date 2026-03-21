@@ -12,6 +12,7 @@ module "ec2" {
   vpc_id           = module.vpc.vpc_id
   public_subnet_id = module.vpc.public_subnet_id
   instance_type    = var.instance_type
+  public_key       = var.public_key
 }
 
 module "rds" {

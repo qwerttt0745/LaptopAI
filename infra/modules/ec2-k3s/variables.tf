@@ -14,3 +14,7 @@ variable "instance_type" {
   type    = string
   default = "t3.micro"
 }
+
+variable "public_key" {
+  type = string
+}
