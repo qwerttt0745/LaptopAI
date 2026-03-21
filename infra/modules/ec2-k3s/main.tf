@@ -48,12 +48,13 @@ resource "aws_key_pair" "k3s" {
 }
 
 resource "aws_instance" "k3s" {
-  ami                    = data.aws_ami.amazon_linux.id
-  instance_type          = var.instance_type
-  subnet_id              = var.public_subnet_id
-  vpc_security_group_ids = [aws_security_group.ec2.id]
-  key_name               = aws_key_pair.k3s.key_name
-  user_data = file("${path.module}/user_data.sh")
+  ami                         = data.aws_ami.amazon_linux.id
+  instance_type               = var.instance_type
+  subnet_id                   = var.public_subnet_id
+  vpc_security_group_ids      = [aws_security_group.ec2.id]
+  key_name                    = aws_key_pair.k3s.key_name
+  user_data                   = file("${path.module}/user_data.sh")
+  user_data_replace_on_change = true
 
   root_block_device {
     volume_type = "gp3"
@@ -64,6 +65,7 @@ resource "aws_instance" "k3s" {
     Name = "laptopai-${var.env}-k3s"
   }
 }
+
 resource "aws_eip" "k3s" {
   instance = aws_instance.k3s.id
   domain   = "vpc"

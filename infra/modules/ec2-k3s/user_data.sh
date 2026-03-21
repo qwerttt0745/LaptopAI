@@ -4,9 +4,12 @@ set -e
 yum update -y
 yum install -y git
 
+PUBLIC_IP=$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4)
+
 curl -sfL https://get.k3s.io | sh -s - \
   --write-kubeconfig-mode 644 \
-  --disable traefik
+  --disable traefik \
+  --tls-san $PUBLIC_IP
 
 systemctl enable k3s
 systemctl start k3s
