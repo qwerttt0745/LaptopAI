@@ -3,7 +3,6 @@ set -e
 
 yum update -y
 yum install -y git cronie
-
 systemctl enable crond
 systemctl start crond
 
@@ -53,19 +52,22 @@ chmod +x /usr/local/bin/ecr-refresh.sh
 
 echo "0 */6 * * * root /usr/local/bin/ecr-refresh.sh" > /etc/cron.d/ecr-refresh
 
+curl -sSL -o /usr/local/bin/argocd https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
+chmod +x /usr/local/bin/argocd
+
 helm repo add argo https://argoproj.github.io/argo-helm
 helm repo update
 
 helm install argocd argo/argo-cd \
   --namespace argocd \
   --set server.service.type=ClusterIP \
-  --wait --timeout 5m
+  --wait --timeout 10m
 
-until kubectl get pods -n argocd | grep argocd-server | grep -q Running; do
+until kubectl get pods -n argocd -l app.kubernetes.io/name=argocd-server | grep -q Running; do
   sleep 10
 done
 
-sleep 30
+sleep 60
 
 ARGOCD_INITIAL_PASSWORD=$(kubectl get secret argocd-initial-admin-secret \
   -n argocd \
@@ -87,16 +89,16 @@ GITHUB_PAT=$(aws ssm get-parameter \
 
 argocd login localhost:8080 \
   --username admin \
-  --password $ARGOCD_INITIAL_PASSWORD \
+  --password "$ARGOCD_INITIAL_PASSWORD" \
   --insecure
 
 argocd account update-password \
-  --current-password $ARGOCD_INITIAL_PASSWORD \
-  --new-password $ARGOCD_NEW_PASSWORD
+  --current-password "$ARGOCD_INITIAL_PASSWORD" \
+  --new-password "$ARGOCD_NEW_PASSWORD"
 
 argocd repo add https://github.com/qwerttt0745/LaptopAI \
   --username qwerttt0745 \
-  --password $GITHUB_PAT \
+  --password "$GITHUB_PAT" \
   --insecure-skip-server-verification
 
 kubectl apply -f https://raw.githubusercontent.com/qwerttt0745/LaptopAI/main/k8s/argocd/applications/dev-apps.yaml
