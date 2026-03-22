@@ -1,6 +1,6 @@
 image:
   repository: 968909453204.dkr.ecr.eu-central-1.amazonaws.com/laptopai-backend
-  tag: ef7e03b5b7c631cf40b91aafe7ee60b6654f48d8
+  tag: dba899c7c8fa5ccdb5b27954fd87695dedae605c
 
 replicaCount: 1
 namespace: dev
