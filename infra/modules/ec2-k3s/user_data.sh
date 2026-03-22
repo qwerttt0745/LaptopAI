@@ -60,3 +60,52 @@ helm install argocd argo/argo-cd \
   --namespace argocd \
   --set server.service.type=ClusterIP \
   --wait --timeout 5m
+
+until kubectl get pods -n argocd | grep argocd-server | grep -q Running; do
+  sleep 10
+done
+
+sleep 30
+
+ARGOCD_INITIAL_PASSWORD=$(kubectl get secret argocd-initial-admin-secret \
+  -n argocd \
+  -o jsonpath="{.data.password}" | base64 -d)
+
+ARGOCD_NEW_PASSWORD=$(aws ssm get-parameter \
+  --name "/laptopai/dev/argocd-password" \
+  --with-decryption \
+  --query "Parameter.Value" \
+  --output text \
+  --region eu-central-1)
+
+GITHUB_PAT=$(aws ssm get-parameter \
+  --name "/laptopai/dev/github-pat" \
+  --with-decryption \
+  --query "Parameter.Value" \
+  --output text \
+  --region eu-central-1)
+
+argocd login localhost:8080 \
+  --username admin \
+  --password $ARGOCD_INITIAL_PASSWORD \
+  --insecure
+
+argocd account update-password \
+  --current-password $ARGOCD_INITIAL_PASSWORD \
+  --new-password $ARGOCD_NEW_PASSWORD
+
+argocd repo add https://github.com/qwerttt0745/LaptopAI \
+  --username qwerttt0745 \
+  --password $GITHUB_PAT \
+  --insecure-skip-server-verification
+
+kubectl apply -f https://raw.githubusercontent.com/qwerttt0745/LaptopAI/main/k8s/argocd/applications/dev-apps.yaml
+
+PUBLIC_IP=$(curl -s icanhazip.com)
+
+aws ssm put-parameter \
+  --name "/laptopai/dev/kubeconfig" \
+  --value "$(cat /etc/rancher/k3s/k3s.yaml | sed "s/127.0.0.1/$PUBLIC_IP/g")" \
+  --type SecureString \
+  --overwrite \
+  --region eu-central-1
