@@ -27,3 +27,12 @@ argocd repo add https://github.com/qwerttt0745/LaptopAI \
   --insecure-skip-server-verification
 
 kubectl apply -f k8s/argocd/applications/dev-apps.yaml
+
+PUBLIC_IP=$(aws ec2 describe-addresses \
+  --filters "Name=tag:Name,Values=laptopai-dev-eip" \
+  --query "Addresses[0].PublicIp" \
+  --output text \
+  --region eu-central-1)
+
+sed -i "s/publicIp: .*/publicIp: \"$PUBLIC_IP\"/" k8s/helm/frontend/values.yaml
+sed -i "s/publicIp: .*/publicIp: \"$PUBLIC_IP\"/" k8s/helm/backend/values.yaml

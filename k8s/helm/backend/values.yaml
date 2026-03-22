@@ -1,6 +1,7 @@
 image:
   repository: 968909453204.dkr.ecr.eu-central-1.amazonaws.com/laptopai-backend
-  tag: f71657dae7854f9532ce9e73c90ac9eae2fec901
+  tag: latest
 
 replicaCount: 1
 namespace: dev
+publicIp: "ПУБЛІЧНИЙ_IP"
