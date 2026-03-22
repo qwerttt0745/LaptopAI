@@ -1,8 +1,9 @@
 image:
   repository: 968909453204.dkr.ecr.eu-central-1.amazonaws.com/laptopai-ai-service
-  tag: dba899c7c8fa5ccdb5b27954fd87695dedae605c
+  tag: latest
 
 replicaCount: 1
 namespace: dev
 redisUrl: redis://redis:6379
-aiModel: gpt-4o-mini
+aiModel: gemini-1.5-flash
+geminiApiKey: "PLACEHOLDER"

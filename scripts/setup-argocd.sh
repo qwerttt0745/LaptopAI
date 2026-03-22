@@ -36,3 +36,13 @@ PUBLIC_IP=$(aws ec2 describe-addresses \
 
 sed -i "s/publicIp: .*/publicIp: \"$PUBLIC_IP\"/" k8s/helm/frontend/values.yaml
 sed -i "s/publicIp: .*/publicIp: \"$PUBLIC_IP\"/" k8s/helm/backend/values.yaml
+
+GEMINI_KEY=$(aws ssm get-parameter \
+  --name "/laptopai/dev/gemini-api-key" \
+  --with-decryption \
+  --query "Parameter.Value" \
+  --output text \
+  --region eu-central-1)
+
+argocd app set laptopai-ai-service-dev \
+  --helm-set geminiApiKey="$GEMINI_KEY"

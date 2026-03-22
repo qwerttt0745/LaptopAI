@@ -2,8 +2,8 @@ from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
-    ai_api_key: str = ""
-    ai_model: str = "gpt-4o-mini"
+    gemini_api_key: str = ""
+    ai_model: str = "gemini-1.5-flash"
     ai_cache_ttl: int = 86400
     redis_url: str = "redis://redis:6379"
 
