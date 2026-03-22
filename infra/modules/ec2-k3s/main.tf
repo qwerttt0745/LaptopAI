@@ -104,6 +104,26 @@ resource "aws_iam_role_policy_attachment" "ecr" {
   role       = aws_iam_role.k3s.name
 }
 
+resource "aws_iam_role_policy" "ssm" {
+  name = "laptopai-${var.env}-ssm-policy"
+  role = aws_iam_role.k3s.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "ssm:GetParameter",
+          "ssm:GetParameters",
+          "ssm:PutParameter"
+        ]
+        Resource = "arn:aws:ssm:eu-central-1:*:parameter/laptopai/*"
+      }
+    ]
+  })
+}
+
 resource "aws_iam_instance_profile" "k3s" {
   name = "laptopai-${var.env}-k3s-profile"
   role = aws_iam_role.k3s.name
