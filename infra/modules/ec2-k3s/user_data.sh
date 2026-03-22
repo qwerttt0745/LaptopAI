@@ -1,8 +1,13 @@
 #!/bin/bash
 set -e
-
 export HOME=/root
 export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
+
+dd if=/dev/zero of=/swapfile bs=128M count=16
+chmod 600 /swapfile
+mkswap /swapfile
+swapon /swapfile
+echo '/swapfile swap swap defaults 0 0' >> /etc/fstab
 
 yum update -y
 yum install -y git cronie
