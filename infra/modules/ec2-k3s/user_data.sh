@@ -1,8 +1,12 @@
 #!/bin/bash
 set -e
 
+export HOME=/root
+export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
+
 yum update -y
 yum install -y git cronie
+
 systemctl enable crond
 systemctl start crond
 
@@ -15,8 +19,6 @@ curl -sfL https://get.k3s.io | sh -s - \
 
 systemctl enable k3s
 systemctl start k3s
-
-export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
 
 until kubectl get nodes | grep -q Ready; do
   sleep 5
@@ -31,6 +33,7 @@ kubectl create namespace monitoring --dry-run=client -o yaml | kubectl apply -f 
 
 cat > /usr/local/bin/ecr-refresh.sh << 'EOF'
 #!/bin/bash
+export HOME=/root
 export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
 TOKEN=$(aws ecr get-login-password --region eu-central-1)
 cat > /etc/rancher/k3s/registries.yaml << YAML
