@@ -1,6 +1,6 @@
 image:
   repository: 968909453204.dkr.ecr.eu-central-1.amazonaws.com/laptopai-ai-service
-  tag: 03f5f925aa6b53f7b80759b4ef03d85e9409eea4
+  tag: f0dc0466345e1e80d2a1b9debd4fd626ce0f9d94
 
 replicaCount: 1
 namespace: dev
