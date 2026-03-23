@@ -5,4 +5,4 @@ image:
 replicaCount: 1
 namespace: dev
 apiUrl: http://backend:8000
-publicIp: "None"
+publicIp: "3.125.143.206"
