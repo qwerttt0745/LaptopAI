@@ -12,7 +12,11 @@ spec:
     helm:
       parameters:
         - name: installCRDs
-          value: "true" 
+          value: "true"    
+        - name: webhook.livenessProbe.timeoutSeconds
+          value: "10"
+        - name: webhook.readinessProbe.timeoutSeconds
+          value: "10"
   destination:
     server: https://kubernetes.default.svc
     namespace: cert-manager
