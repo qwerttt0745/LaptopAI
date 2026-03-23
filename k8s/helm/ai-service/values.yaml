@@ -5,5 +5,5 @@ image:
 replicaCount: 1
 namespace: dev
 redisUrl: redis://redis:6379
-aiModel: gemini-1.5-flash
+aiModel: gemini-2.5-flash
 geminiApiKey: "PLACEHOLDER"
