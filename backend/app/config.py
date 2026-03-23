@@ -2,10 +2,9 @@ from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
-    gemini_api_key: str = ""
-    ai_model: str = "gemini-2.5-flash"
-    ai_cache_ttl: int = 86400
+    database_url: str = ""
     redis_url: str = "redis://redis:6379"
+    ai_service_url: str = "http://ai-service:8001"
 
     class Config:
         env_file = ".env"

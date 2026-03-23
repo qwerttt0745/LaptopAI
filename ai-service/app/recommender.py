@@ -20,22 +20,32 @@ async def get_recommendations(goals: str, budget: int, filters: dict) -> list[di
     if cached:
         return json.loads(cached)
 
-    user_message = f"Goals: {goals}\nBudget: ${budget}\nFilters: {json.dumps(filters)}"
+    user_message = f"""You are a laptop recommendation expert.
+Recommend exactly 5 laptops for these needs:
+Goals: {goals}
+Budget: ${budget}
+Filters: {json.dumps(filters)}
 
-    model = genai.GenerativeModel(
-        model_name=settings.ai_model,
-        system_instruction=SYSTEM_PROMPT,
-    )
+Return ONLY a valid JSON object, no markdown, no explanation:
+{{"laptops": [{{"name": "...", "price": 000, "cpu": "...", "ram": "...", "gpu": "...", "storage": "...", "why": "..."}}]}}"""
+
+    model = genai.GenerativeModel(model_name=settings.ai_model)
 
     response = model.generate_content(
         user_message,
         generation_config=genai.GenerationConfig(
             temperature=0.3,
-            response_mime_type="application/json",
         ),
     )
 
-    data = json.loads(response.text)
+    text = response.text.strip()
+    if text.startswith("```"):
+        text = text.split("```")[1]
+        if text.startswith("json"):
+            text = text[4:]
+    text = text.strip()
+
+    data = json.loads(text)
     laptops = data.get("laptops", data.get("recommendations", []))
 
     await set_cached(cache_key, json.dumps(laptops))

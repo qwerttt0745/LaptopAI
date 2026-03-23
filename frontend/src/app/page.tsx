@@ -24,8 +24,9 @@ export default function Home() {
         setError("");
         setLaptops([]);
         try {
+            const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
             const response = await fetch(
-                `${process.env.NEXT_PUBLIC_API_URL}/api/recommendations`,
+                `${API_URL}/api/recommendations`,
                 {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
