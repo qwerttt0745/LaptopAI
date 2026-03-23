@@ -4,11 +4,15 @@ metadata:
   name: {{ .Chart.Name }}
   namespace: {{ .Values.namespace | default "dev" }}
   annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
 spec:
   ingressClassName: nginx
+  tls:
+    - secretName: api-laptopai-tls-secret
+      hosts:
+        - api.laptopai.dev
   rules:
-    - host: api.{{ .Values.publicIp }}.nip.io
+    - host: api.laptopai.dev
       http:
         paths:
           - path: /
