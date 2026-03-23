@@ -4,4 +4,4 @@ image:
 
 replicaCount: 1
 namespace: dev
-publicIp: "3.125.143.206"
+publicIp: "3.123.223.58"

@@ -1,0 +1,7 @@
+    name: cert-manager
+    namespace: argocd
+    project: default
+    source:
+      repoURL: https://github.com/qwerttt0745/LaptopAI 
+      targetRevision: HEAD
+      path: k8s/argocd/applications

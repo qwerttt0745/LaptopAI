@@ -5,4 +5,19 @@ image:
 replicaCount: 1
 namespace: dev
 backendUrl: "http://backend:8000"
-publicIp: "3.125.143.206"
+publicIp: "3.123.223.58"
+
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+  hosts:
+    - host: laptopai.dev
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: laptopai-tls-secret
+      hosts:
+        - laptopai.dev
