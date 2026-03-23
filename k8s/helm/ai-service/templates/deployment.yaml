@@ -22,7 +22,7 @@ spec:
             - name: GEMINI_API_KEY
               valueFrom:
                 secretKeyRef:
-                  name: ai-service-secrets
+                  name: manual-ai-secrets
                   key: GEMINI_API_KEY
             - name: REDIS_URL
               value: {{ .Values.redisUrl }}
