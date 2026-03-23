@@ -15,6 +15,11 @@ variable "instance_type" {
   default = "t3.micro"
 }
 
+variable "allowed_admin_cidrs" {
+  type    = list(string)
+  default = ["0.0.0.0/0"]
+}
+
 variable "public_key" {
   type = string
 }

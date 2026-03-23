@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: redis
+  namespace: {{ .Values.namespace | default "dev" }}
   labels:
     app: redis
 spec:
@@ -14,16 +15,54 @@ spec:
       labels:
         app: redis
     spec:
+      securityContext:
+        runAsNonRoot: true
+        fsGroup: 999
       containers:
       - name: redis
         image: redis:7-alpine
+        args:
+          - "--save"
+          - ""
+          - "--appendonly"
+          - "no"
         ports:
         - containerPort: 6379
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 999
+          runAsGroup: 999
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - ALL
+        livenessProbe:
+          tcpSocket:
+            port: 6379
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 3
+          failureThreshold: 3
+        readinessProbe:
+          tcpSocket:
+            port: 6379
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+        resources:
+          requests:
+            cpu: 20m
+            memory: 32Mi
+          limits:
+            cpu: 100m
+            memory: 64Mi
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: redis
+  namespace: {{ .Values.namespace | default "dev" }}
 spec:
   selector:
     app: redis

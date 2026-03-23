@@ -26,16 +26,7 @@ argocd repo add https://github.com/qwerttt0745/LaptopAI \
   --password "$1" \
   --insecure-skip-server-verification
 
-kubectl apply -f k8s/argocd/applications/dev-apps.yaml
-
-PUBLIC_IP=$(aws ec2 describe-addresses \
-  --filters "Name=tag:Name,Values=laptopai-dev-eip" \
-  --query "Addresses[0].PublicIp" \
-  --output text \
-  --region eu-central-1)
-
-sed -i "s/publicIp: .*/publicIp: \"$PUBLIC_IP\"/" k8s/helm/frontend/values.yaml
-sed -i "s/publicIp: .*/publicIp: \"$PUBLIC_IP\"/" k8s/helm/backend/values.yaml
+kubectl apply -f k8s/argocd/app-of-apps.yaml
 
 GEMINI_KEY=$(aws ssm get-parameter \
   --name "/laptopai/dev/gemini-api-key" \
@@ -44,5 +35,9 @@ GEMINI_KEY=$(aws ssm get-parameter \
   --output text \
   --region eu-central-1)
 
-argocd app set laptopai-ai-service-dev \
-  --helm-set geminiApiKey="$GEMINI_KEY"
+kubectl create namespace dev --dry-run=client -o yaml | kubectl apply -f -
+
+kubectl create secret generic manual-ai-secrets \
+  --namespace dev \
+  --from-literal=GEMINI_API_KEY="$GEMINI_KEY" \
+  --dry-run=client -o yaml | kubectl apply -f -

@@ -1,7 +1,25 @@
-    name: cert-manager
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: laptopai-app-of-apps
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/qwerttt0745/LaptopAI
+    targetRevision: HEAD
+    path: k8s/argocd/applications
+    directory:
+      recurse: false
+      include: '{cert-manager.yaml,ingress.yaml,dev-apps.yaml}'
+  destination:
+    server: https://kubernetes.default.svc
     namespace: argocd
-    project: default
-    source:
-      repoURL: https://github.com/qwerttt0745/LaptopAI 
-      targetRevision: HEAD
-      path: k8s/argocd/applications
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
