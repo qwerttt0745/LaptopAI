@@ -11,11 +11,11 @@ ingress:
   annotations:
     cert-manager.io/cluster-issuer: "letsencrypt-prod"
   hosts:
-    - host: api.devopsai.dev
+    - host: api.laptopai.dev
       paths:
         - path: /
           pathType: Prefix
   tls:
-    - secretName: api-devopsai-tls-secret
+    - secretName: api-laptopai-tls-secret
       hosts:
-        - api.devopsai.dev
+        - api.laptopai.dev

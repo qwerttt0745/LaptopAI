@@ -12,11 +12,11 @@ ingress:
   annotations:
     cert-manager.io/cluster-issuer: "letsencrypt-prod"
   hosts:
-    - host: devopsai.dev
+    - host: laptopai.dev
       paths:
         - path: /
           pathType: Prefix
   tls:
-    - secretName: devopsai-tls-secret
+    - secretName: laptopai-tls-secret
       hosts:
-        - devopsai.dev
+        - laptopai.dev
