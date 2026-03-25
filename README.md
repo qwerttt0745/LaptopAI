@@ -28,7 +28,7 @@ This repository is designed as a full DevOps portfolio project: application code
 **Prerequisites:** Docker, Docker Compose, Git
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/LaptopAI.git
+git clone https://github.com/qwerttt0745/LaptopAI.git
 cd LaptopAI
 cp .env.example .env
 docker compose up -d
