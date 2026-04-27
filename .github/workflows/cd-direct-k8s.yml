@@ -95,10 +95,10 @@ jobs:
         run: |
           set -euo pipefail
 
-          # 1. Створюємо неймспейс dev, якщо його ще немає
+          # Ensure target namespace exists
           kubectl create namespace "$K8S_NAMESPACE" --dry-run=client -o yaml | kubectl apply -f -
 
-          # 1.1 Забезпечуємо наявність секрета для AI service
+          # Ensure AI service secret exists
           if [ -z "$GEMINI_API_KEY" ]; then
             echo "GEMINI_API_KEY GitHub secret is not set"
             exit 1
@@ -108,26 +108,25 @@ jobs:
             --from-literal=GEMINI_API_KEY="$GEMINI_API_KEY" \
             --dry-run=client -o yaml | kubectl apply -f -
 
-          # 2. Деплоїмо Backend через Helm
+          # Deploy backend chart
           helm upgrade --install "$BACKEND_DEPLOYMENT" ./k8s/helm/backend \
             --namespace "$K8S_NAMESPACE" \
             --set image.repository="$REGISTRY/$ECR_BACKEND_REPOSITORY" \
             --set image.tag="$IMAGE_TAG"
 
-          # 3. Деплоїмо Frontend через Helm
+          # Deploy frontend chart
           helm upgrade --install "$FRONTEND_DEPLOYMENT" ./k8s/helm/frontend \
             --namespace "$K8S_NAMESPACE" \
             --set image.repository="$REGISTRY/$ECR_FRONTEND_REPOSITORY" \
             --set image.tag="$IMAGE_TAG"
 
-          # 4. Деплоїмо AI Service через Helm
-          # ВАЖЛИВО: переконайся, що шлях ./k8s/helm/ai-service вказано правильно
+          # Deploy AI service chart
           helm upgrade --install "$AI_SERVICE_DEPLOYMENT" ./k8s/helm/ai-service \
             --namespace "$K8S_NAMESPACE" \
             --set image.repository="$REGISTRY/$ECR_AI_SERVICE_REPOSITORY" \
             --set image.tag="$IMAGE_TAG"
 
-          # 5. Чекаємо на успішний запуск усіх подів
+          # Wait for successful rollouts
           kubectl -n "$K8S_NAMESPACE" rollout status deployment/"$BACKEND_DEPLOYMENT" --timeout=180s
           kubectl -n "$K8S_NAMESPACE" rollout status deployment/"$FRONTEND_DEPLOYMENT" --timeout=180s
           kubectl -n "$K8S_NAMESPACE" rollout status deployment/"$AI_SERVICE_DEPLOYMENT" --timeout=300s

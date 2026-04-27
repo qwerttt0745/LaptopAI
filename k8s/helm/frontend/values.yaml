@@ -16,7 +16,12 @@ ingress:
       paths:
         - path: /
           pathType: Prefix
+    - host: www.laptopai.dev
+      paths:
+        - path: /
+          pathType: Prefix
   tls:
     - secretName: laptopai-tls-secret
       hosts:
         - laptopai.dev
+        - www.laptopai.dev

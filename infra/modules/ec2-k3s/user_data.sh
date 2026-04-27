@@ -33,7 +33,6 @@ curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 
 kubectl create namespace dev --dry-run=client -o yaml | kubectl apply -f -
 kubectl create namespace prod --dry-run=client -o yaml | kubectl apply -f -
-kubectl create namespace argocd --dry-run=client -o yaml | kubectl apply -f -
 kubectl create namespace monitoring --dry-run=client -o yaml | kubectl apply -f -
 
 cat > /usr/local/bin/ecr-refresh.sh << 'EOF'
@@ -59,11 +58,3 @@ chmod +x /usr/local/bin/ecr-refresh.sh
 /usr/local/bin/ecr-refresh.sh
 
 echo "0 */6 * * * root /usr/local/bin/ecr-refresh.sh" > /etc/cron.d/ecr-refresh
-
-helm repo add argo https://argoproj.github.io/argo-helm
-helm repo update
-
-helm install argocd argo/argo-cd \
-  --namespace argocd \
-  --set server.service.type=ClusterIP \
-  --wait --timeout 10m
