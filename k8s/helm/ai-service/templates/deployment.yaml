@@ -22,11 +22,11 @@ spec:
           ports:
             - containerPort: 8001
           env:
-            - name: GEMINI_API_KEY
+            - name: AI_API_KEY
               valueFrom:
                 secretKeyRef:
                   name: manual-ai-secrets
-                  key: GEMINI_API_KEY
+                  key: AI_API_KEY
             - name: REDIS_URL
               value: {{ .Values.redisUrl }}
             - name: AI_MODEL

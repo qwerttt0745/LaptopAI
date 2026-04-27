@@ -5,4 +5,4 @@ image:
 replicaCount: 1
 namespace: dev
 redisUrl: redis://redis:6379
-aiModel: gemini-2.5-flash
+aiModel: llama3-8b-8192
