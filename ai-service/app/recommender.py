@@ -5,15 +5,14 @@ from app.config import settings
 from app.cache import make_cache_key, get_cached, set_cached
 
 # Ініціалізуємо клієнта Groq. Він бере ключ зі змінної AI_API_KEY, яку прокидає Kubernetes
-client = AsyncGroq(
-    api_key=os.environ.get("AI_API_KEY")
-)
+client = AsyncGroq(api_key=os.environ.get("AI_API_KEY"))
 
 SYSTEM_PROMPT = """You are a laptop recommendation expert.
 When given user goals and budget, recommend exactly 5 laptops.
 Return a JSON object with key "laptops" containing an array of objects with fields:
 name, price, cpu, ram, gpu, storage, why.
 Only return valid JSON, no extra text."""
+
 
 async def get_recommendations(goals: str, budget: int, filters: dict) -> list[dict]:
     # 1. Перевіряємо кеш (Redis)
@@ -32,11 +31,11 @@ Filters: {json.dumps(filters)}"""
         chat_completion = await client.chat.completions.create(
             messages=[
                 {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": user_message}
+                {"role": "user", "content": user_message},
             ],
             model=os.environ.get("AI_MODEL", "llama-3.1-8b-instant"),
             temperature=0.3,
-            response_format={"type": "json_object"}
+            response_format={"type": "json_object"},
         )
 
         # 3. Парсимо відповідь
