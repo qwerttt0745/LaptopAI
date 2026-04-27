@@ -91,11 +91,22 @@ jobs:
         env:
           REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           IMAGE_TAG: ${{ github.sha }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: |
           set -euo pipefail
 
           # 1. Створюємо неймспейс dev, якщо його ще немає
           kubectl create namespace "$K8S_NAMESPACE" --dry-run=client -o yaml | kubectl apply -f -
+
+          # 1.1 Забезпечуємо наявність секрета для AI service
+          if [ -z "$GEMINI_API_KEY" ]; then
+            echo "GEMINI_API_KEY GitHub secret is not set"
+            exit 1
+          fi
+
+          kubectl -n "$K8S_NAMESPACE" create secret generic manual-ai-secrets \
+            --from-literal=GEMINI_API_KEY="$GEMINI_API_KEY" \
+            --dry-run=client -o yaml | kubectl apply -f -
 
           # 2. Деплоїмо Backend через Helm
           helm upgrade --install "$BACKEND_DEPLOYMENT" ./k8s/helm/backend \
@@ -119,4 +130,14 @@ jobs:
           # 5. Чекаємо на успішний запуск усіх подів
           kubectl -n "$K8S_NAMESPACE" rollout status deployment/"$BACKEND_DEPLOYMENT" --timeout=180s
           kubectl -n "$K8S_NAMESPACE" rollout status deployment/"$FRONTEND_DEPLOYMENT" --timeout=180s
-          kubectl -n "$K8S_NAMESPACE" rollout status deployment/"$AI_SERVICE_DEPLOYMENT" --timeout=180s
+          kubectl -n "$K8S_NAMESPACE" rollout status deployment/"$AI_SERVICE_DEPLOYMENT" --timeout=300s
+
+      - name: Debug rollout failure
+        if: failure()
+        run: |
+          set -euo pipefail
+          kubectl -n "$K8S_NAMESPACE" get pods -o wide
+          kubectl -n "$K8S_NAMESPACE" describe deployment "$AI_SERVICE_DEPLOYMENT" || true
+          kubectl -n "$K8S_NAMESPACE" describe pods -l app="$AI_SERVICE_DEPLOYMENT" || true
+          kubectl -n "$K8S_NAMESPACE" logs deployment/"$AI_SERVICE_DEPLOYMENT" --all-containers --tail=200 || true
+          kubectl -n "$K8S_NAMESPACE" get events --sort-by=.metadata.creationTimestamp | tail -n 100 || true
