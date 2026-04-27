@@ -34,7 +34,7 @@ Filters: {json.dumps(filters)}"""
                 {"role": "system", "content": SYSTEM_PROMPT},
                 {"role": "user", "content": user_message}
             ],
-            model=os.environ.get("AI_MODEL", "llama3-8b-8192"),
+            model=os.environ.get("AI_MODEL", "llama-3.1-8b-instant"),
             temperature=0.3,
             response_format={"type": "json_object"}
         )
