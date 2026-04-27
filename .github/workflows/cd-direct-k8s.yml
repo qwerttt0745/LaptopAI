@@ -9,11 +9,14 @@ env:
   AWS_REGION: ${{ secrets.AWS_REGION }}
   ECR_BACKEND_REPOSITORY: ${{ secrets.ECR_BACKEND_REPOSITORY }}
   ECR_FRONTEND_REPOSITORY: ${{ secrets.ECR_FRONTEND_REPOSITORY }}
+  ECR_AI_SERVICE_REPOSITORY: ${{ secrets.ECR_AI_SERVICE_REPOSITORY }}
   K8S_NAMESPACE: dev
   BACKEND_DEPLOYMENT: backend
   BACKEND_CONTAINER: backend
   FRONTEND_DEPLOYMENT: frontend
   FRONTEND_CONTAINER: frontend
+  AI_SERVICE_DEPLOYMENT: ai-service
+  AI_SERVICE_CONTAINER: ai-service
 
 jobs:
   build-push-and-deploy:
@@ -60,101 +63,6 @@ jobs:
           docker push "$REGISTRY/$ECR_FRONTEND_REPOSITORY:$IMAGE_TAG"
           docker push "$REGISTRY/$ECR_FRONTEND_REPOSITORY:latest"
 
-      - name: Install kubectl
-        uses: azure/setup-kubectl@v4
-        with:
-          version: v1.30.0
-
-      - name: Configure kubeconfig
-        run: |
-          mkdir -p "$HOME/.kube"
-          echo "${{ secrets.KUBE_CONFIG_DATA }}" | base64 -d > "$HOME/.kube/config"
-          chmod 600 "$HOME/.kube/config"
-
-      - name: Deploy backend and frontend images
-        env:
-          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          IMAGE_TAG: ${{ github.sha }}
-        run: |
-          set -euo pipefail
-
-          BACKEND_IMAGE="$REGISTRY/$ECR_BACKEND_REPOSITORY:$IMAGE_TAG"
-          FRONTEND_IMAGE="$REGISTRY/$ECR_FRONTEND_REPOSITORY:$IMAGE_TAG"
-
-          kubectl -n "$K8S_NAMESPACE" set image deployment/"$BACKEND_DEPLOYMENT" \
-            "$BACKEND_CONTAINER"="$BACKEND_IMAGE"
-
-          kubectl -n "$K8S_NAMESPACE" set image deployment/"$FRONTEND_DEPLOYMENT" \
-            "$FRONTEND_CONTAINER"="$FRONTEND_IMAGE"
-
-          kubectl -n "$K8S_NAMESPACE" rollout status deployment/"$BACKEND_DEPLOYMENT" --timeout=180s
-          kubectl -n "$K8S_NAMESPACE" rollout status deployment/"$FRONTEND_DEPLOYMENT" --timeout=180s
-name: Direct CD to Kubernetes
-
-on:
-  push:
-    branches:
-      - main
-
-env:
-  AWS_REGION: ${{ secrets.AWS_REGION }}
-  ECR_BACKEND_REPOSITORY: ${{ secrets.ECR_BACKEND_REPOSITORY }}
-  ECR_FRONTEND_REPOSITORY: ${{ secrets.ECR_FRONTEND_REPOSITORY }}
-  ECR_AI_SERVICE_REPOSITORY: ${{ secrets.ECR_AI_SERVICE_REPOSITORY }} # ⬇️ ДОДАНО
-  K8S_NAMESPACE: dev
-  BACKEND_DEPLOYMENT: backend
-  BACKEND_CONTAINER: backend
-  FRONTEND_DEPLOYMENT: frontend
-  FRONTEND_CONTAINER: frontend
-  AI_SERVICE_DEPLOYMENT: ai-service # ⬇️ ДОДАНО
-  AI_SERVICE_CONTAINER: ai-service  # ⬇️ ДОДАНО
-
-jobs:
-  build-push-and-deploy:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
-
-      - name: Login to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v2
-
-      - name: Build and push backend image
-        env:
-          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          IMAGE_TAG: ${{ github.sha }}
-        run: |
-          docker build \
-            -t "$REGISTRY/$ECR_BACKEND_REPOSITORY:$IMAGE_TAG" \
-            -t "$REGISTRY/$ECR_BACKEND_REPOSITORY:latest" \
-            ./backend
-
-          docker push "$REGISTRY/$ECR_BACKEND_REPOSITORY:$IMAGE_TAG"
-          docker push "$REGISTRY/$ECR_BACKEND_REPOSITORY:latest"
-
-      - name: Build and push frontend image
-        env:
-          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          IMAGE_TAG: ${{ github.sha }}
-        run: |
-          docker build \
-            -t "$REGISTRY/$ECR_FRONTEND_REPOSITORY:$IMAGE_TAG" \
-            -t "$REGISTRY/$ECR_FRONTEND_REPOSITORY:latest" \
-            ./frontend
-
-          docker push "$REGISTRY/$ECR_FRONTEND_REPOSITORY:$IMAGE_TAG"
-          docker push "$REGISTRY/$ECR_FRONTEND_REPOSITORY:latest"
-
-      # ⬇️ ДОДАНО НОВИЙ БЛОК ДЛЯ AI SERVICE
       - name: Build and push AI service image
         env:
           REGISTRY: ${{ steps.login-ecr.outputs.registry }}
@@ -163,7 +71,7 @@ jobs:
           docker build \
             -t "$REGISTRY/$ECR_AI_SERVICE_REPOSITORY:$IMAGE_TAG" \
             -t "$REGISTRY/$ECR_AI_SERVICE_REPOSITORY:latest" \
-            ./ai-service # ВАЖЛИВО: переконайся, що папка з кодом AI-сервісу називається саме так
+            ./ai-service
 
           docker push "$REGISTRY/$ECR_AI_SERVICE_REPOSITORY:$IMAGE_TAG"
           docker push "$REGISTRY/$ECR_AI_SERVICE_REPOSITORY:latest"
@@ -188,7 +96,7 @@ jobs:
 
           BACKEND_IMAGE="$REGISTRY/$ECR_BACKEND_REPOSITORY:$IMAGE_TAG"
           FRONTEND_IMAGE="$REGISTRY/$ECR_FRONTEND_REPOSITORY:$IMAGE_TAG"
-          AI_SERVICE_IMAGE="$REGISTRY/$ECR_AI_SERVICE_REPOSITORY:$IMAGE_TAG" # ⬇️ ДОДАНО
+          AI_SERVICE_IMAGE="$REGISTRY/$ECR_AI_SERVICE_REPOSITORY:$IMAGE_TAG"
 
           kubectl -n "$K8S_NAMESPACE" set image deployment/"$BACKEND_DEPLOYMENT" \
             "$BACKEND_CONTAINER"="$BACKEND_IMAGE"
@@ -196,12 +104,9 @@ jobs:
           kubectl -n "$K8S_NAMESPACE" set image deployment/"$FRONTEND_DEPLOYMENT" \
             "$FRONTEND_CONTAINER"="$FRONTEND_IMAGE"
 
-          # ⬇️ ДОДАНО КОМАНДУ ДЛЯ AI SERVICE
           kubectl -n "$K8S_NAMESPACE" set image deployment/"$AI_SERVICE_DEPLOYMENT" \
             "$AI_SERVICE_CONTAINER"="$AI_SERVICE_IMAGE"
 
           kubectl -n "$K8S_NAMESPACE" rollout status deployment/"$BACKEND_DEPLOYMENT" --timeout=180s
           kubectl -n "$K8S_NAMESPACE" rollout status deployment/"$FRONTEND_DEPLOYMENT" --timeout=180s
-          
-          # ⬇️ ДОДАНО ОЧІКУВАННЯ ДЛЯ AI SERVICE
           kubectl -n "$K8S_NAMESPACE" rollout status deployment/"$AI_SERVICE_DEPLOYMENT" --timeout=180s
