@@ -19,6 +19,12 @@ spec:
       containers:
         - name: {{ .Chart.Name }}
           image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: backend-db-secrets
+                  key: DATABASE_URL
           ports:
             - containerPort: 8000
           securityContext:
