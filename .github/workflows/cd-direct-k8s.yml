@@ -86,16 +86,6 @@ jobs:
           mkdir -p "$HOME/.kube"
           echo "${{ secrets.KUBE_CONFIG_DATA }}" | base64 -d > "$HOME/.kube/config"
           chmod 600 "$HOME/.kube/config"
-          
-      - name: Deploy Monitoring Stack
-        run: |
-          # Оновлюємо залежності (завантажуємо офіційний чарт Prometheus)
-          helm dependency update ./k8s/helm/monitoring/
-          
-          # Деплоїмо моніторинг у неймспейс monitoring
-          helm upgrade --install my-monitoring ./k8s/helm/monitoring/ \
-            --namespace monitoring \
-            --create-namespace
 
       - name: Deploy to Kubernetes using Helm
         env:
