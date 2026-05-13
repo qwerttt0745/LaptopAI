@@ -1,0 +1,11 @@
+apiVersion: v2
+name: laptopai-monitoring
+description: Офіційний стек Prometheus & Grafana з нашими лімітами
+type: application
+version: 0.1.0
+
+# Ось тут ми підключаємо офіційний чарт як залежність:
+dependencies:
+  - name: kube-prometheus-stack
+    version: "58.0.0" # Краще фіксувати версію, щоб оновлення не зламало кластер
+    repository: "https://prometheus-community.github.io/helm-charts"
